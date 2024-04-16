@@ -1,0 +1,62 @@
+version: '3'
+services:
+  sentry:
+    container_name: sentry-example
+    image: sentry
+    env_file:
+      - .env
+    ports:
+      - '9000:9000'
+    depends_on:
+      - db
+      - redis
+    tty: true
+    stdin_open: true
+    platform: linux/amd64
+    volumes:
+      - ./sentry.conf.py:/etc/sentry/sentry.conf.py
+
+  cron:
+    container_name: sentry-cron-example
+    image: sentry
+    command: run cron
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    platform: linux/amd64
+
+  worker:
+    container_name: sentry-worker-example
+    image: sentry
+    command: run worker
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    platform: linux/amd64
+
+  redis:
+    container_name: sentry-redis-example
+    image: redis
+    volumes:
+      - redis-data-example:/data
+    ports:
+      - '6379:6379'
+
+  db:
+    container_name: sentry-postgres-example
+    image: postgres
+    environment:
+      POSTGRES_USER: sentry
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pg-data-example:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+volumes:
+  redis-data-example:
+  pg-data-example:
